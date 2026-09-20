@@ -1,6 +1,6 @@
-# CyberMind AI Security Assistant
+# CyberMindSpace AI Security Assistant
 
-A local Day 8 workshop project: a browser calls `POST /api/chat`; Flask validates the topic and mode, applies a per-client rate limit, retrieves approved local knowledge, calls a swappable provider, and returns JSON. The default `MockAIProvider` is deterministic and needs no account, internet connection, paid API, or API key.
+A local Day 8 workshop project: a browser calls `POST /api/chat`; Flask validates the topic and mode, applies a per-client rate limit, retrieves approved local knowledge, calls a swappable provider, and returns JSON. Each answer includes an explanation, three learning points, and a takeaway. The default `MockAIProvider` is deterministic and needs no account, internet connection, paid API, or API key.
 
 ## Ubuntu setup
 
