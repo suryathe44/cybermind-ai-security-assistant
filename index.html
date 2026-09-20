@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1018">
+  <meta name="description" content="Explore trusted, local AI security knowledge with the CyberMind AI Security Assistant.">
+  <title>CyberMind AI Security Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="CyberMind home"><span class="brand-mark" aria-hidden="true">C<span>✦</span></span><span>CYBERMIND<span class="brand-muted">SPACE</span></span></a>
+      <span class="header-badge"><span class="status-dot"></span> DAY 8 · AI SECURITY LAB</span>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span> LEARN THE THREATS. BUILD WITH TRUST.</p>
+          <h1 id="page-title">AI security,<br><em>made clear.</em></h1>
+          <p class="hero-description">Explore three essential AI security concepts with concise answers from a curated local knowledge base.</p>
+          <div class="hero-points"><span><span class="point-icon">✓</span> Approved knowledge</span><span><span class="point-icon">✓</span> No API key required</span></div>
+        </div>
+        <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><div class="core"><span>✦</span></div><div class="orbit-label label-one">TRUSTED DATA</div><div class="orbit-label label-two">SECURE BY DESIGN</div></div>
+      </section>
+
+      <section class="workspace" aria-label="Ask the assistant">
+        <div class="workspace-heading"><div><p class="section-kicker">THE ASSISTANT</p><h2>What would you like to learn?</h2></div><span class="step-label">01 / EXPLORE</span></div>
+        <form id="chat-form">
+          <fieldset class="topic-fieldset"><legend>Choose a topic</legend><div class="topic-options">
+            <label class="topic-card"><input type="radio" name="topic" value="prompt injection" checked><span class="topic-icon">↗</span><span><strong>Prompt injection</strong><small>When untrusted text changes instructions</small></span><span class="topic-arrow">↗</span></label>
+            <label class="topic-card"><input type="radio" name="topic" value="rag poisoning"><span class="topic-icon">◈</span><span><strong>RAG poisoning</strong><small>When retrieved knowledge is manipulated</small></span><span class="topic-arrow">↗</span></label>
+            <label class="topic-card"><input type="radio" name="topic" value="mcp"><span class="topic-icon">⌘</span><span><strong>MCP</strong><small>Connecting AI to tools and resources</small></span><span class="topic-arrow">↗</span></label>
+          </div></fieldset>
+          <div class="form-footer"><div class="mode-control"><label for="mode">I want to see</label><select id="mode" name="mode"><option value="summary">A simple explanation</option><option value="example">A real-world example</option><option value="mitigation">How to reduce the risk</option></select></div><button type="submit" id="ask-button">Get answer <span aria-hidden="true">↗</span></button></div>
+        </form>
+      </section>
+
+      <section class="answer-panel" id="answer-panel" aria-live="polite" aria-atomic="true"><div class="answer-header"><span class="answer-tag"><span class="status-dot"></span> ANSWER</span><span id="source" class="answer-source">APPROVED LOCAL KNOWLEDGE</span></div><h2 id="result-title">Ready when you are.</h2><p id="answer">Select a topic and choose what you want to learn. Your answer will appear here.</p></section>
+    </main>
+    <footer><span>CYBERMINDSPACE © 2026</span><span>DAY 8 PRACTICAL · BUILT FOR LEARNING</span></footer>
+  </div>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>
