@@ -5,7 +5,8 @@ A local Day 8 workshop project: a browser calls `POST /api/chat`; Flask validate
 ## Ubuntu setup
 
 ```bash
-cd day8-ai-saas
+git clone https://github.com/suryathe44/cybermind-ai-security-assistant.git
+cd cybermind-ai-security-assistant
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
