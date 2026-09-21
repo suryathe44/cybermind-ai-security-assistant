@@ -67,6 +67,7 @@ class ChatTests(unittest.TestCase):
         wrong = self.client.post("/api/lab/mcp/submit", json={"action_id": "trust"})
         self.assertEqual(wrong.status_code, 200)
         self.assertFalse(wrong.json["passed"])
+        self.assertIn("Authentication", wrong.json["feedback"])
         self.assertNotIn("secure_fix", wrong.json)
         self.assertEqual(self.client.get("/api/lab/unknown").status_code, 404)
         self.assertEqual(self.client.post("/api/lab/mcp/submit", json={"action_id": "bogus"}).status_code, 400)
