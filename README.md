@@ -6,11 +6,11 @@ A local Day 8 workshop project: a browser calls `POST /api/chat`; Flask validate
 
 After reading an answer, select **Start practical lab** to work through a fictional scenario for prompt injection, RAG poisoning, or MCP object-level access control. Each topic has easy, medium, and hard cases. Each lab offers choices and a hint. The server checks the selected choice and reveals the evidence, root cause, vulnerable outcome, secure outcome, and fix after a correct answer. Answer keys stay on the server. These labs are safe simulations and do not call outside services.
 
-Wrong choices receive a specific explanation of the remaining security gap. The page tracks how many of the three labs you have completed in this browser using local storage; no account or server-side learner profile is needed.
+Wrong choices receive a specific explanation of the remaining security gap. The learning path tracks all nine scenarios, weak topics, and the next unfinished scenario in this browser using local storage; no account or server-side learner profile is needed.
 
 The lab API provides `GET /api/lab/<topic>?level=medium` and `POST /api/lab/<topic>/submit` with JSON such as `{"action_id":"omit","level":"medium"}`. Submissions share the same 10 requests per 60 seconds per-client limiter as chat.
 
-The six-question final assessment mixes topics and difficulties. It scores answers on the server, shows feedback, and enables a downloadable PNG certificate at 5/6 or higher. The certificate is a self-paced learning artifact, not a verified credential. Assessment endpoints are `GET /api/assessment` and `POST /api/assessment/submit` with an `answers` object keyed `q1` through `q6`.
+The six-question final assessment mixes topics and difficulties. It scores answers on the server, shows feedback, and enables a downloadable PNG certificate at 5/6 or higher. A passing assessment provides a short-lived proof for issuing a signed certificate ID. The public `/verify/<certificate_id>` page checks that signature. It verifies the recorded self-paced assessment result, not the learner’s identity. Keep `CERTIFICATE_SECRET` stable across deployments or older certificates will stop verifying. Assessment endpoints are `GET /api/assessment` and `POST /api/assessment/submit` with an `answers` object keyed `q1` through `q6`.
 
 References are linked beside each lab, with a review date. The explanations are educational interpretations of [OWASP Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/), [OWASP Data and Model Poisoning](https://genai.owasp.org/llmrisk/llm042025-data-and-model-poisoning/), and [MCP Security Best Practices](https://modelcontextprotocol.io/docs/2025-11-25/tutorials/security/security_best_practices).
 
@@ -60,8 +60,20 @@ Supported topics are `prompt injection`, `rag poisoning`, and `mcp`. Modes are `
 - `tests/`: workshop behavior checks
 - `.github/workflows/tests.yml`: automated tests on GitHub pushes and pull requests
 
-The limiter is stored in process memory, so it resets when the app restarts and is intended for this local single-process lab. Logs include request ID, client IP, status, and duration; they omit the submitted topic and answer. Replacing the mock with a real provider is a later extension, not required for this version.
+The limiter is stored in process memory, so it resets when the app restarts and is intended for this local single-process lab. Chat logs include request ID, status, and duration; they omit client IP, topic, and answer. Replacing the mock with a real provider is a later extension, not required for this version.
 
 ## Render deployment
 
-The included `render.yaml` is a Render Blueprint for this repository. Connect the GitHub repository in Render, choose **New > Blueprint**, and select the repository. Render will install dependencies and start one Gunicorn worker. `/health` is the service health check. The base app needs no environment variables or API keys. The in-memory rate limiter is scoped to the running process and resets when the service restarts.
+The included `render.yaml` is a Render Blueprint for this repository. Connect the GitHub repository in Render, choose **New > Blueprint**, and select the repository. Render will install dependencies and start one Gunicorn worker. `/health` is the service health check. The learning app needs no API keys. Signed certificates require a stable random `CERTIFICATE_SECRET` of at least 32 characters, and instructor insights require a separate `INSTRUCTOR_TOKEN` of at least 24 characters. The Blueprint generates both on first creation. If the existing Render service was not created from this Blueprint, set both in its Environment settings and redeploy. Keep them private. The in-memory rate limiter is scoped to the running process and resets when the service restarts.
+
+## Learning path, languages, and instructor privacy
+
+Choose **EN** or **हिन्दी** to change the explanations, labs, and assessment content. The dashboard tracks each of the nine scenarios in this browser and flags unfinished scenarios with wrong attempts. Clearing browser storage clears this progress. The assessment is available independently of dashboard completion.
+
+The instructor view accepts the private `INSTRUCTOR_TOKEN` in a request header and shows aggregate score distribution and missed question/lab counts. There are no learner accounts or learner IDs. The token is never saved in browser storage. Counts are held only in this process memory and reset on restart; they are unsuitable for durable multi-class reporting. Avoid sharing the token with students.
+
+Certificate IDs are tamper evident but the name is self-entered, so the verification page explicitly does not claim identity verification. The short-lived assessment proof may be reused until expiry to issue more than one certificate; treat these as self-paced workshop completions.
+
+## Accessibility review
+
+Reviewed against the [WCAG 2.2 quick reference](https://www.w3.org/WAI/WCAG22/quickref/) for keyboard access, visible focus, labels, status messages, target sizes, reduced motion, and narrow-screen reflow. The page includes a skip link, semantic forms, 44px buttons, focus indicators, and live status regions. This is a focused code and browser review, not a formal WCAG conformance certification.
