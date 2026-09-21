@@ -6,6 +6,8 @@ A local Day 8 workshop project: a browser calls `POST /api/chat`; Flask validate
 
 After reading an answer, select **Start practical lab** to work through a fictional scenario for prompt injection, RAG poisoning, or MCP object-level access control. Each lab offers choices and a hint. The server checks the selected choice and reveals the evidence, root cause, vulnerable outcome, secure outcome, and fix after a correct answer. Answer keys stay on the server. These labs are safe simulations and do not call outside services.
 
+Wrong choices receive a specific explanation of the remaining security gap. The page tracks how many of the three labs you have completed in this browser using local storage; no account or server-side learner profile is needed.
+
 The lab API provides `GET /api/lab/<topic>` and `POST /api/lab/<topic>/submit` with JSON such as `{"action_id":"separate"}`. Submissions share the same 10 requests per 60 seconds per-client limiter as chat.
 
 ## Ubuntu setup

@@ -12,6 +12,10 @@ LABS = {
             {"id": "separate", "label": "Summarize the document while treating its commands as untrusted text"},
         ],
         "correct": "separate",
+        "feedback": {
+            "follow": "That would let an untrusted document control the assistant and trigger a data leak.",
+            "ignore": "Discarding the whole document loses the useful data the customer asked you to summarize.",
+        },
         "hint": "Ask whether the document has authority to change the user's task.",
         "root_cause": "Untrusted document content was promoted into an instruction.",
         "secure_fix": "Keep retrieved or uploaded content in a data role and require authorization before any tool action.",
@@ -29,6 +33,10 @@ LABS = {
             {"id": "blend", "label": "Blend the article with trusted sources without mentioning the conflict"},
         ],
         "correct": "verify",
+        "feedback": {
+            "repeat": "Repeating an unverified reset process can send the user to an attacker-controlled site.",
+            "blend": "Blending the claim hides a conflict; the unsupported step still reaches the user.",
+        },
         "hint": "Retrieved text can be relevant but still lack trustworthy provenance.",
         "root_cause": "A poisoned retrieval result was treated as an authoritative source.",
         "secure_fix": "Verify provenance, apply source allowlists, and cite approved material for sensitive workflows.",
@@ -46,6 +54,10 @@ LABS = {
             {"id": "authorize", "label": "Check the caller's permission for record 204 and deny access if absent"},
         ],
         "correct": "authorize",
+        "feedback": {
+            "trust": "Authentication proves who the caller is, but does not grant access to every record.",
+            "filter": "Hiding one field still exposes the rest of a record the caller cannot access.",
+        },
         "hint": "Authorization must be checked for this exact record, not just for the tool or session.",
         "root_cause": "The tool lacked object-level authorization (BOLA).",
         "secure_fix": "Check tenant and record ownership at the tool boundary before every sensitive read.",
@@ -67,7 +79,7 @@ def evaluate(topic, action_id):
     if lab is None or action_id not in {action["id"] for action in lab["actions"]}:
         return None
     passed = action_id == lab["correct"]
-    result = {"passed": passed, "feedback": "Correct defense selected." if passed else "That choice leaves a security gap. Review the hint and try again."}
+    result = {"passed": passed, "feedback": "Correct defense selected." if passed else lab["feedback"][action_id]}
     if passed:
         result.update({key: lab[key] for key in ("evidence", "root_cause", "secure_fix", "vulnerable", "secure")})
     return result
