@@ -49,6 +49,7 @@ class ChatTests(unittest.TestCase):
         self.assertIn(b"CyberMindSpace AI Security Assistant", page)
         self.assertIn(b"answer-details", page)
         self.assertIn(b"lab-panel", page)
+        self.assertIn(b"assessment-form", page)
 
     def test_labs_keep_answer_keys_server_side(self):
         for topic, correct in (("prompt injection", "separate"), ("rag poisoning", "verify"), ("mcp", "authorize")):
@@ -77,6 +78,37 @@ class ChatTests(unittest.TestCase):
         for _ in range(10):
             self.assertEqual(self.client.post("/api/lab/mcp/submit", json={"action_id": "trust"}).status_code, 200)
         self.assertEqual(self.client.post("/api/lab/mcp/submit", json={"action_id": "trust"}).status_code, 429)
+
+    def test_all_levels_and_sources(self):
+        for topic in ("prompt injection", "rag poisoning", "mcp"):
+            for level in ("easy", "medium", "hard"):
+                with self.subTest(topic=topic, level=level):
+                    response = self.client.get(f"/api/lab/{topic}?level={level}")
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.json["level"], level)
+                    self.assertTrue(response.json["reference"]["url"].startswith("https://"))
+                    self.assertNotIn("correct", response.json)
+        self.assertEqual(self.client.get("/api/lab/mcp?level=expert").status_code, 404)
+
+    def test_assessment_scoring_and_validation(self):
+        from assessment import QUESTIONS
+        from labs import get_lab
+
+        public = self.client.get("/api/assessment")
+        self.assertEqual(public.status_code, 200)
+        self.assertEqual(len(public.json["questions"]), 6)
+        self.assertNotIn("correct", str(public.json))
+        answers = {f"q{index}": get_lab(topic, level)["correct"] for index, (topic, level) in enumerate(QUESTIONS, 1)}
+        result = self.client.post("/api/assessment/submit", json={"answers": answers})
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json["score"], 6)
+        self.assertTrue(result.json["passed"])
+        answers["q1"] = "approve"
+        answers["q2"] = "use"
+        failed = self.client.post("/api/assessment/submit", json={"answers": answers})
+        self.assertEqual(failed.json["score"], 4)
+        self.assertFalse(failed.json["passed"])
+        self.assertEqual(self.client.post("/api/assessment/submit", json={"answers": {"q1": "omit"}}).status_code, 400)
 
 
 if __name__ == "__main__":
