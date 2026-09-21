@@ -1,5 +1,15 @@
 """Fictional, deterministic security exercises with server-side answer keys."""
 
+from scenarios import EXTRA_SCENARIOS
+
+LEVELS = ("easy", "medium", "hard")
+REVIEWED_ON = "2026-09-21"
+REFERENCES = {
+    "prompt injection": {"title": "OWASP LLM01: Prompt Injection", "url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"},
+    "rag poisoning": {"title": "OWASP LLM04: Data and Model Poisoning", "url": "https://genai.owasp.org/llmrisk/llm042025-data-and-model-poisoning/"},
+    "mcp": {"title": "MCP Security Best Practices", "url": "https://modelcontextprotocol.io/docs/2025-11-25/tutorials/security/security_best_practices"},
+}
+
 LABS = {
     "prompt injection": {
         "title": "Prompt Injection Defense Lab",
@@ -67,15 +77,23 @@ LABS = {
 }
 
 
-def public_lab(topic):
-    lab = LABS.get(topic)
+def get_lab(topic, level="easy"):
+    base = LABS.get(topic)
+    if base is None or level not in LEVELS:
+        return None
+    return base if level == "easy" else {**base, **EXTRA_SCENARIOS[topic][level]}
+
+
+def public_lab(topic, level="easy"):
+    lab = get_lab(topic, level)
     if lab is None:
         return None
-    return {key: lab[key] for key in ("title", "scenario", "task", "evidence", "actions", "hint")}
+    return {**{key: lab[key] for key in ("title", "scenario", "task", "actions", "hint")}, "level": level,
+            "reference": REFERENCES[topic], "reviewed_on": REVIEWED_ON}
 
 
-def evaluate(topic, action_id):
-    lab = LABS.get(topic)
+def evaluate(topic, action_id, level="easy"):
+    lab = get_lab(topic, level)
     if lab is None or action_id not in {action["id"] for action in lab["actions"]}:
         return None
     passed = action_id == lab["correct"]

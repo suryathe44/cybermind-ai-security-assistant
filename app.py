@@ -7,8 +7,9 @@ from uuid import uuid4
 
 from flask import Flask, jsonify, render_template, request
 
+from assessment import grade, public_assessment
 from knowledge import retrieve
-from labs import evaluate, public_lab
+from labs import LEVELS, evaluate, public_lab
 from providers import MockAIProvider
 from security import RateLimiter
 
@@ -68,7 +69,7 @@ def create_app(provider=None, limiter=None):
 
     @app.get("/api/lab/<topic>")
     def lab(topic):
-        exercise = public_lab(topic.strip().lower())
+        exercise = public_lab(topic.strip().lower(), request.args.get("level", "easy"))
         if exercise is None:
             return jsonify({"error": "unknown lab"}), 404
         return jsonify(exercise)
@@ -79,11 +80,26 @@ def create_app(provider=None, limiter=None):
         if not app.config["RATE_LIMITER"].allow(client):
             return jsonify({"error": "rate limit exceeded"}), 429
         data = request.get_json(silent=True)
-        if not isinstance(data, dict) or not isinstance(data.get("action_id"), str):
+        if not isinstance(data, dict) or not isinstance(data.get("action_id"), str) or data.get("level", "easy") not in LEVELS:
             return jsonify({"error": "invalid answer"}), 400
-        result = evaluate(topic.strip().lower(), data["action_id"])
+        result = evaluate(topic.strip().lower(), data["action_id"], data.get("level", "easy"))
         if result is None:
             return jsonify({"error": "invalid lab or answer"}), 400
+        return jsonify(result)
+
+    @app.get("/api/assessment")
+    def assessment():
+        return jsonify(public_assessment())
+
+    @app.post("/api/assessment/submit")
+    def submit_assessment():
+        client = request.remote_addr or "local"
+        if not app.config["RATE_LIMITER"].allow(client):
+            return jsonify({"error": "rate limit exceeded"}), 429
+        data = request.get_json(silent=True)
+        result = grade(data.get("answers")) if isinstance(data, dict) else None
+        if result is None:
+            return jsonify({"error": "invalid answers"}), 400
         return jsonify(result)
 
     return app

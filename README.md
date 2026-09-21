@@ -4,11 +4,15 @@ A local Day 8 workshop project: a browser calls `POST /api/chat`; Flask validate
 
 ## Hands-on security labs
 
-After reading an answer, select **Start practical lab** to work through a fictional scenario for prompt injection, RAG poisoning, or MCP object-level access control. Each lab offers choices and a hint. The server checks the selected choice and reveals the evidence, root cause, vulnerable outcome, secure outcome, and fix after a correct answer. Answer keys stay on the server. These labs are safe simulations and do not call outside services.
+After reading an answer, select **Start practical lab** to work through a fictional scenario for prompt injection, RAG poisoning, or MCP object-level access control. Each topic has easy, medium, and hard cases. Each lab offers choices and a hint. The server checks the selected choice and reveals the evidence, root cause, vulnerable outcome, secure outcome, and fix after a correct answer. Answer keys stay on the server. These labs are safe simulations and do not call outside services.
 
 Wrong choices receive a specific explanation of the remaining security gap. The page tracks how many of the three labs you have completed in this browser using local storage; no account or server-side learner profile is needed.
 
-The lab API provides `GET /api/lab/<topic>` and `POST /api/lab/<topic>/submit` with JSON such as `{"action_id":"separate"}`. Submissions share the same 10 requests per 60 seconds per-client limiter as chat.
+The lab API provides `GET /api/lab/<topic>?level=medium` and `POST /api/lab/<topic>/submit` with JSON such as `{"action_id":"omit","level":"medium"}`. Submissions share the same 10 requests per 60 seconds per-client limiter as chat.
+
+The six-question final assessment mixes topics and difficulties. It scores answers on the server, shows feedback, and enables a downloadable PNG certificate at 5/6 or higher. The certificate is a self-paced learning artifact, not a verified credential. Assessment endpoints are `GET /api/assessment` and `POST /api/assessment/submit` with an `answers` object keyed `q1` through `q6`.
+
+References are linked beside each lab, with a review date. The explanations are educational interpretations of [OWASP Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/), [OWASP Data and Model Poisoning](https://genai.owasp.org/llmrisk/llm042025-data-and-model-poisoning/), and [MCP Security Best Practices](https://modelcontextprotocol.io/docs/2025-11-25/tutorials/security/security_best_practices).
 
 ## Ubuntu setup
 
@@ -48,10 +52,13 @@ Supported topics are `prompt injection`, `rag poisoning`, and `mcp`. Modes are `
 - `app.py`: Flask route, validation, and metadata logging
 - `knowledge.py`: approved local content and retrieval
 - `labs.py`: fictional exercises and server-side answer checking
+- `scenarios.py`: medium and hard lab cases
+- `assessment.py`: mixed assessment and scoring
 - `providers.py`: provider interface and deterministic mock
 - `security.py`: in-memory sliding-window rate limiter
 - `templates/` and `static/`: browser interface
 - `tests/`: workshop behavior checks
+- `.github/workflows/tests.yml`: automated tests on GitHub pushes and pull requests
 
 The limiter is stored in process memory, so it resets when the app restarts and is intended for this local single-process lab. Logs include request ID, client IP, status, and duration; they omit the submitted topic and answer. Replacing the mock with a real provider is a later extension, not required for this version.
 

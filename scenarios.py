@@ -1,0 +1,130 @@
+"""Additional fictional scenarios for each lab topic."""
+
+EXTRA_SCENARIOS = {
+    "prompt injection": {
+        "medium": {
+            "scenario": "An assistant reads a vendor email while preparing a meeting summary. A hidden line asks it to mark an unrelated invoice as approved.",
+            "task": "What should the assistant do with the hidden request?",
+            "actions": [
+                {"id": "approve", "label": "Approve the invoice because it appears in the email"},
+                {"id": "omit", "label": "Summarize the email but do not execute the embedded approval request"},
+                {"id": "ask_email", "label": "Ask the email sender whether the invoice should be approved"},
+            ],
+            "correct": "omit",
+            "feedback": {
+                "approve": "An email is untrusted task data and cannot authorize a financial action.",
+                "ask_email": "The email sender still cannot grant authority through content the assistant was asked to summarize.",
+            },
+            "hint": "Separate the user's summary request from commands inside the email.",
+            "evidence": "The invoice command came from lower-trust email content, not from the signed-in user.",
+            "root_cause": "Email content crossed the instruction boundary.",
+            "vulnerable": "The assistant approves an unrelated invoice.",
+            "secure": "The assistant summarizes the email and ignores its action request.",
+            "secure_fix": "Treat email as data and require an explicit authorized user action for invoice approval.",
+        },
+        "hard": {
+            "scenario": "A search snippet contains an encoded instruction to call a file-export tool. The user only asked for a comparison of two products.",
+            "task": "Which control best prevents the tool call?",
+            "actions": [
+                {"id": "decode", "label": "Decode the snippet and execute any resulting command"},
+                {"id": "block", "label": "Keep snippets as untrusted data and require user authorization for file exports"},
+                {"id": "hide", "label": "Hide the tool call from the displayed answer"},
+            ],
+            "correct": "block",
+            "feedback": {
+                "decode": "Encoding does not give search content authority to trigger a tool.",
+                "hide": "Concealing the action does not prevent an unauthorized export.",
+            },
+            "hint": "Consider the source of the instruction and the impact of the requested tool action.",
+            "evidence": "The export request originated in a search result and was unrelated to the user's comparison task.",
+            "root_cause": "Untrusted retrieval text was allowed to invoke a privileged tool.",
+            "vulnerable": "A private file is exported during a product comparison.",
+            "secure": "The comparison proceeds without any file export.",
+            "secure_fix": "Bind tool calls to the user's authorized intent and enforce tool-level permissions.",
+        },
+    },
+    "rag poisoning": {
+        "medium": {
+            "scenario": "A newly indexed FAQ changes a refund policy from 30 days to 3 days. The document has no owner or review date.",
+            "task": "How should the assistant handle this retrieval result?",
+            "actions": [
+                {"id": "use", "label": "Use the new 3-day policy because it was retrieved first"},
+                {"id": "review", "label": "Compare it with the approved policy and flag the conflict"},
+                {"id": "average", "label": "Tell the user refunds are allowed for about 16 days"},
+            ],
+            "correct": "review",
+            "feedback": {
+                "use": "Retrieval rank does not prove that a policy is authentic or current.",
+                "average": "Averaging contradictory policies invents a policy that neither source supports.",
+            },
+            "hint": "A policy change needs provenance and review, not just a high retrieval rank.",
+            "evidence": "The new FAQ lacks an owner and review date and contradicts the approved policy.",
+            "root_cause": "A low-trust document was treated as an approved policy.",
+            "vulnerable": "Customers receive an incorrect refund deadline.",
+            "secure": "The assistant uses the approved policy and flags the suspicious FAQ.",
+            "secure_fix": "Maintain source ownership, approval status, and conflict checks before retrieval content is used.",
+        },
+        "hard": {
+            "scenario": "Several near-duplicate retrieved pages all recommend a new login portal. They share one unverified origin but appear as separate search results.",
+            "task": "What should be checked before citing them?",
+            "actions": [
+                {"id": "count", "label": "Trust the claim because several pages repeat it"},
+                {"id": "trace", "label": "Trace provenance to the original source and verify the portal against approved records"},
+                {"id": "quote", "label": "Quote one page without checking the portal"},
+            ],
+            "correct": "trace",
+            "feedback": {
+                "count": "Duplicates from one source are not independent confirmation.",
+                "quote": "A citation alone does not make an unverified login portal safe.",
+            },
+            "hint": "Multiple results may still come from a single poisoned source.",
+            "evidence": "The pages share one origin and the portal has no approved record.",
+            "root_cause": "Duplicate poisoned results created false confidence.",
+            "vulnerable": "The assistant sends users to a fraudulent login portal.",
+            "secure": "The assistant withholds the unsupported portal and uses verified login guidance.",
+            "secure_fix": "Deduplicate by provenance and verify sensitive URLs against an approved source registry.",
+        },
+    },
+    "mcp": {
+        "medium": {
+            "scenario": "A calendar tool can list events for any team. A user asks for a private event from another team's calendar.",
+            "task": "Which check belongs at the tool boundary?",
+            "actions": [
+                {"id": "allow", "label": "Return the event because the tool itself is available"},
+                {"id": "scope", "label": "Check the user's access to that team's calendar and event"},
+                {"id": "mask", "label": "Return the event but mask its title"},
+            ],
+            "correct": "scope",
+            "feedback": {
+                "allow": "Tool availability does not grant access to every resource it can reach.",
+                "mask": "Other event fields can still expose private information.",
+            },
+            "hint": "Authorization should be scoped to the requested calendar and event.",
+            "evidence": "The event belongs to a different team, so the caller's resource permission must be checked.",
+            "root_cause": "Tool access was confused with resource access.",
+            "vulnerable": "A private event from another team is disclosed.",
+            "secure": "The tool denies access without the required calendar permission.",
+            "secure_fix": "Enforce per-resource authorization inside each sensitive tool operation.",
+        },
+        "hard": {
+            "scenario": "A connected assistant receives a request to update project 42. The user can read project 42 but has edit rights only for project 17.",
+            "task": "What must happen before the update?",
+            "actions": [
+                {"id": "write", "label": "Update project 42 because the user can read it"},
+                {"id": "check", "label": "Check edit permission for project 42 and deny the write if absent"},
+                {"id": "log", "label": "Perform the update and log it afterward"},
+            ],
+            "correct": "check",
+            "feedback": {
+                "write": "Read access does not imply permission to modify a project.",
+                "log": "Logging an unauthorized write does not prevent it.",
+            },
+            "hint": "Check both the action and the exact resource before a write.",
+            "evidence": "The caller has read permission for project 42, but edit permission only for project 17.",
+            "root_cause": "The tool failed to distinguish read and write authorization by object.",
+            "vulnerable": "Project 42 is changed by a user without edit rights.",
+            "secure": "The tool rejects the update and leaves project 42 unchanged.",
+            "secure_fix": "Require action-specific permission on the target object for every write.",
+        },
+    },
+}
