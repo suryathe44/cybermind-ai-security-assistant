@@ -23,6 +23,8 @@ class ChatTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(phrase, response.json["answer"])
                 self.assertEqual(response.json["source"], "approved-local-knowledge")
+                self.assertEqual(len(response.json["details"]["points"]), 3)
+                self.assertTrue(response.json["details"]["takeaway"])
 
     def test_unknown_topic_is_controlled(self):
         response = self.ask("unknown topic")
@@ -43,7 +45,37 @@ class ChatTests(unittest.TestCase):
         self.assertEqual(self.ask("mcp").status_code, 429)
 
     def test_frontend(self):
-        self.assertIn(b"CyberMind AI Security Assistant", self.client.get("/").data)
+        page = self.client.get("/").data
+        self.assertIn(b"CyberMindSpace AI Security Assistant", page)
+        self.assertIn(b"answer-details", page)
+        self.assertIn(b"lab-panel", page)
+
+    def test_labs_keep_answer_keys_server_side(self):
+        for topic, correct in (("prompt injection", "separate"), ("rag poisoning", "verify"), ("mcp", "authorize")):
+            with self.subTest(topic=topic):
+                response = self.client.get(f"/api/lab/{topic}")
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("scenario", response.json)
+                self.assertNotIn("correct", response.json)
+                self.assertNotIn("secure_fix", response.json)
+                result = self.client.post(f"/api/lab/{topic}/submit", json={"action_id": correct})
+                self.assertEqual(result.status_code, 200)
+                self.assertTrue(result.json["passed"])
+                self.assertIn("secure_fix", result.json)
+
+    def test_lab_wrong_choice_and_validation(self):
+        wrong = self.client.post("/api/lab/mcp/submit", json={"action_id": "trust"})
+        self.assertEqual(wrong.status_code, 200)
+        self.assertFalse(wrong.json["passed"])
+        self.assertNotIn("secure_fix", wrong.json)
+        self.assertEqual(self.client.get("/api/lab/unknown").status_code, 404)
+        self.assertEqual(self.client.post("/api/lab/mcp/submit", json={"action_id": "bogus"}).status_code, 400)
+        self.assertEqual(self.client.post("/api/lab/mcp/submit", data="{", content_type="application/json").status_code, 400)
+
+    def test_lab_submissions_share_rate_limit(self):
+        for _ in range(10):
+            self.assertEqual(self.client.post("/api/lab/mcp/submit", json={"action_id": "trust"}).status_code, 200)
+        self.assertEqual(self.client.post("/api/lab/mcp/submit", json={"action_id": "trust"}).status_code, 429)
 
 
 if __name__ == "__main__":
