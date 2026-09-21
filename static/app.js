@@ -15,6 +15,19 @@ const labActions = document.querySelector('#lab-actions');
 const labResult = document.querySelector('#lab-result');
 const labEvidence = document.querySelector('#lab-evidence');
 let labTopic = '';
+const progressKey = 'cybermindspace-labs-v1';
+let completedLabs = [];
+try {
+  const saved = JSON.parse(localStorage.getItem(progressKey) || '[]');
+  if (Array.isArray(saved)) completedLabs = saved.filter((topic) => ['prompt injection', 'rag poisoning', 'mcp'].includes(topic));
+} catch { /* Browsers without storage can still use every lab. */ }
+
+function updateProgress() {
+  const count = new Set(completedLabs).size;
+  document.querySelector('#lab-progress-text').textContent = `${count} of 3 labs completed`;
+  document.querySelector('#lab-progress-fill').style.width = `${(count / 3) * 100}%`;
+}
+updateProgress();
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -54,7 +67,7 @@ form.addEventListener('submit', async (event) => {
     }
   } catch {
     title.textContent = 'Connection error';
-    answer.textContent = 'The local server is unavailable. Open the app through its Flask URL and try again.';
+    answer.textContent = 'The server is unavailable. Please try again shortly.';
     source.textContent = 'OFFLINE';
     panel.classList.remove('is-filled');
   } finally {
@@ -64,6 +77,7 @@ form.addEventListener('submit', async (event) => {
 
 startLab.addEventListener('click', async () => {
   labPanel.hidden = false;
+  updateProgress();
   labResult.hidden = true;
   document.querySelector('#lab-hint').hidden = true;
   document.querySelector('#lab-hint-button').hidden = false;
@@ -119,6 +133,11 @@ labForm.addEventListener('submit', async (event) => {
     document.querySelector('#lab-feedback').textContent = result.feedback || result.error || 'Could not check this answer.';
     labResult.classList.toggle('passed', Boolean(result.passed));
     if (result.passed) {
+      if (!completedLabs.includes(labTopic)) {
+        completedLabs.push(labTopic);
+        try { localStorage.setItem(progressKey, JSON.stringify(completedLabs)); } catch { /* Storage is optional. */ }
+        updateProgress();
+      }
       for (const [id, key] of Object.entries({
         'lab-evidence-text': 'evidence', 'lab-root-cause': 'root_cause',
         'lab-vulnerable': 'vulnerable', 'lab-secure': 'secure', 'lab-secure-fix': 'secure_fix',
