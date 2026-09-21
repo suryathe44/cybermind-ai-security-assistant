@@ -8,6 +8,7 @@ from uuid import uuid4
 from flask import Flask, jsonify, render_template, request
 
 from knowledge import retrieve
+from labs import evaluate, public_lab
 from providers import MockAIProvider
 from security import RateLimiter
 
@@ -64,6 +65,26 @@ def create_app(provider=None, limiter=None):
                 "answer": "No approved knowledge found.", "source": "none",
             })
         return respond(app.config["PROVIDER"].generate(topic, mode, context))
+
+    @app.get("/api/lab/<topic>")
+    def lab(topic):
+        exercise = public_lab(topic.strip().lower())
+        if exercise is None:
+            return jsonify({"error": "unknown lab"}), 404
+        return jsonify(exercise)
+
+    @app.post("/api/lab/<topic>/submit")
+    def submit_lab(topic):
+        client = request.remote_addr or "local"
+        if not app.config["RATE_LIMITER"].allow(client):
+            return jsonify({"error": "rate limit exceeded"}), 429
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict) or not isinstance(data.get("action_id"), str):
+            return jsonify({"error": "invalid answer"}), 400
+        result = evaluate(topic.strip().lower(), data["action_id"])
+        if result is None:
+            return jsonify({"error": "invalid lab or answer"}), 400
+        return jsonify(result)
 
     return app
 

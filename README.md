@@ -2,6 +2,12 @@
 
 A local Day 8 workshop project: a browser calls `POST /api/chat`; Flask validates the topic and mode, applies a per-client rate limit, retrieves approved local knowledge, calls a swappable provider, and returns JSON. Each answer includes an explanation, three learning points, and a takeaway. The default `MockAIProvider` is deterministic and needs no account, internet connection, paid API, or API key.
 
+## Hands-on security labs
+
+After reading an answer, select **Start practical lab** to work through a fictional scenario for prompt injection, RAG poisoning, or MCP object-level access control. Each lab offers choices and a hint. The server checks the selected choice and reveals the evidence, root cause, vulnerable outcome, secure outcome, and fix after a correct answer. Answer keys stay on the server. These labs are safe simulations and do not call outside services.
+
+The lab API provides `GET /api/lab/<topic>` and `POST /api/lab/<topic>/submit` with JSON such as `{"action_id":"separate"}`. Submissions share the same 10 requests per 60 seconds per-client limiter as chat.
+
 ## Ubuntu setup
 
 ```bash
@@ -39,6 +45,7 @@ Supported topics are `prompt injection`, `rag poisoning`, and `mcp`. Modes are `
 
 - `app.py`: Flask route, validation, and metadata logging
 - `knowledge.py`: approved local content and retrieval
+- `labs.py`: fictional exercises and server-side answer checking
 - `providers.py`: provider interface and deterministic mock
 - `security.py`: in-memory sliding-window rate limiter
 - `templates/` and `static/`: browser interface
