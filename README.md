@@ -64,13 +64,13 @@ The limiter is stored in process memory, so it resets when the app restarts and 
 
 ## Render deployment
 
-The included `render.yaml` is a Render Blueprint for this repository. Connect the GitHub repository in Render, choose **New > Blueprint**, and select the repository. Render will install dependencies and start one Gunicorn worker. `/health` is the service health check. The learning app needs no API keys. Signed certificates require a stable random `CERTIFICATE_SECRET` of at least 32 characters, and instructor insights require a separate `INSTRUCTOR_TOKEN` of at least 24 characters. The Blueprint generates both on first creation. If the existing Render service was not created from this Blueprint, set both in its Environment settings and redeploy. Keep them private. The in-memory rate limiter is scoped to the running process and resets when the service restarts.
+The included `render.yaml` is a Render Blueprint for this repository. Connect the GitHub repository in Render, choose **New > Blueprint**, and select the repository. Render will install dependencies and start one Gunicorn worker. `/health` is the service health check. The learning app needs no API keys. Signed certificates require a stable random `CERTIFICATE_SECRET` of at least 32 characters, The Blueprint generates the certificate secret on first creation. If the existing Render service was not created from this Blueprint, set `CERTIFICATE_SECRET` in its Environment settings and redeploy. Keep it private. The in-memory rate limiter is scoped to the running process and resets when the service restarts.
 
-## Learning path, languages, and instructor privacy
+## Learning path, languages, and quick practice
 
 Choose **EN** or **हिन्दी** to change the explanations, labs, and assessment content. The dashboard tracks each of the nine scenarios in this browser and flags unfinished scenarios with wrong attempts. Clearing browser storage clears this progress. The assessment is available independently of dashboard completion.
 
-The instructor view accepts the private `INSTRUCTOR_TOKEN` in a request header and shows aggregate score distribution and missed question/lab counts. There are no learner accounts or learner IDs. The token is never saved in browser storage. Counts are held only in this process memory and reset on restart; they are unsuitable for durable multi-class reporting. Avoid sharing the token with students.
+The Quick Practice button opens a random unfinished core scenario. It uses the same browser-only progress data and does not require an account.
 
 Certificate IDs are tamper evident but the name is self-entered, so the verification page explicitly does not claim identity verification. The short-lived assessment proof may be reused until expiry to issue more than one certificate; treat these as self-paced workshop completions.
 

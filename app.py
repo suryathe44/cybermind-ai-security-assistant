@@ -2,7 +2,6 @@
 
 import logging
 import os
-import hmac
 from time import perf_counter
 from uuid import uuid4
 
@@ -12,7 +11,6 @@ from assessment import QUESTIONS, grade, public_assessment
 from certificates import assessment_proof, issue, score_from_proof, verify
 from knowledge import retrieve
 from labs import LEVELS, evaluate, public_lab
-from metrics import AnonymousMetrics
 from providers import MockAIProvider
 from security import RateLimiter
 from translations import LAB_HI, localize_chat, localize_lab
@@ -20,13 +18,11 @@ from translations import LAB_HI, localize_chat, localize_lab
 ALLOWED_MODES = {"summary", "example", "mitigation"}
 
 
-def create_app(provider=None, limiter=None, certificate_secret=None, instructor_token=None, metrics=None):
+def create_app(provider=None, limiter=None, certificate_secret=None):
     app = Flask(__name__)
     app.config["PROVIDER"] = provider or MockAIProvider()
     app.config["RATE_LIMITER"] = limiter or RateLimiter()
     app.config["CERTIFICATE_SECRET"] = certificate_secret if certificate_secret is not None else os.environ.get("CERTIFICATE_SECRET", "")
-    app.config["INSTRUCTOR_TOKEN"] = instructor_token if instructor_token is not None else os.environ.get("INSTRUCTOR_TOKEN", "")
-    app.config["METRICS"] = metrics or AnonymousMetrics()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
     @app.get("/")
@@ -101,7 +97,6 @@ def create_app(provider=None, limiter=None, certificate_secret=None, instructor_
         result = evaluate(topic.strip().lower(), data["action_id"], data.get("level", "easy"))
         if result is None:
             return jsonify({"error": "invalid lab or answer"}), 400
-        app.config["METRICS"].record_lab(topic.strip().lower(), data.get("level", "easy"), result["passed"])
         return jsonify(localize_lab(result, topic.strip().lower(), data.get("level", "easy"), data["action_id"]) if data.get("lang") == "hi" else result)
 
     @app.get("/api/assessment")
@@ -125,7 +120,6 @@ def create_app(provider=None, limiter=None, certificate_secret=None, instructor_
         result = grade(data.get("answers"))
         if result is None:
             return jsonify({"error": "invalid answers"}), 400
-        app.config["METRICS"].record_assessment(result)
         if data.get("lang") == "hi":
             for (topic, level), item in zip(QUESTIONS, result["results"]):
                 item["explanation"] = "सही बचाव चुना गया।" if item["correct"] else LAB_HI[(topic, level)]["feedback"][data["answers"][item["id"]]]
@@ -153,14 +147,6 @@ def create_app(provider=None, limiter=None, certificate_secret=None, instructor_
     def verify_certificate(certificate_id):
         record = verify(app.config["CERTIFICATE_SECRET"], certificate_id)
         return render_template("verify.html", record=record), 200 if record else 404
-
-    @app.get("/api/instructor/summary")
-    def instructor_summary():
-        expected = app.config["INSTRUCTOR_TOKEN"]
-        supplied = request.headers.get("X-Instructor-Token", "")
-        if not expected or len(expected) < 24 or not hmac.compare_digest(expected, supplied):
-            return jsonify({"error": "instructor access unavailable or invalid"}), 403
-        return jsonify(app.config["METRICS"].summary())
 
     return app
 

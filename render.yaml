@@ -9,5 +9,3 @@ services:
     envVars:
       - key: CERTIFICATE_SECRET
         generateValue: true
-      - key: INSTRUCTOR_TOKEN
-        generateValue: true
