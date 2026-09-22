@@ -126,10 +126,10 @@ class ChatTests(unittest.TestCase):
         self.assertTrue(any(ord(char) > 0x900 for char in assessment.json["questions"][0]["task"]))
         self.assertEqual(self.client.get("/api/assessment?lang=fr").status_code, 400)
 
-    def test_signed_certificate_and_instructor_privacy(self):
+    def test_signed_certificate(self):
         from assessment import QUESTIONS
         from labs import get_lab
-        client = create_app(certificate_secret="s" * 40, instructor_token="i" * 32).test_client()
+        client = create_app(certificate_secret="s" * 40).test_client()
         answers = {f"q{index}": get_lab(topic, level)["correct"] for index, (topic, level) in enumerate(QUESTIONS, 1)}
         passed = client.post("/api/assessment/submit", json={"answers": answers}).json
         self.assertEqual(passed["score"], 6)
@@ -139,11 +139,7 @@ class ChatTests(unittest.TestCase):
         self.assertEqual(client.get(f"/verify/{certificate_id}").status_code, 200)
         self.assertEqual(client.get(f"/verify/{certificate_id}changed").status_code, 404)
         self.assertEqual(client.post("/api/certificate", json={"proof": "fake", "name": "Someone"}).status_code, 400)
-        self.assertEqual(client.get("/api/instructor/summary").status_code, 403)
-        summary = client.get("/api/instructor/summary", headers={"X-Instructor-Token": "i" * 32})
-        self.assertEqual(summary.status_code, 200)
-        self.assertEqual(summary.json["assessment_scores"]["6"], 1)
-        self.assertNotIn("Workshop Learner", str(summary.json))
+        self.assertEqual(client.get("/api/instructor/summary").status_code, 404)
 
     def test_two_bonus_practical_labs(self):
         for topic, correct in (("prompt injection", "summarize"), ("mcp", "check_folder")):
