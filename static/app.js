@@ -80,9 +80,9 @@ function setLanguage(next) {
   document.querySelector('[data-i18n="pathTitle"]').textContent = next === 'hi' ? 'नौ परिदृश्य, एक साफ़ रास्ता।' : 'Nine scenarios, one clear path.';
   document.querySelector('[data-i18n="pathSummary"]').textContent = next === 'hi' ? 'आपकी प्रगति इसी browser में रहती है। हर विषय के आसान, मध्यम और कठिन अभ्यास पूरे करें।' : 'Your progress stays in this browser. Complete easy, medium, and hard labs for each topic.';
   document.querySelector('#path-continue').textContent = next === 'hi' ? 'जहाँ छोड़ा था वहाँ से जारी रखें' : 'Continue where you left off';
-  document.querySelector('#bonus-kicker').textContent = next === 'hi' ? 'अतिरिक्त प्रैक्टिकल लैब' : 'BONUS PRACTICAL LABS';
-  document.querySelector('#bonus-title').textContent = next === 'hi' ? 'दो असली फैसलों का अभ्यास करें।' : 'Practice two real-world decisions.';
-  document.querySelector('#bonus-intro').textContent = next === 'hi' ? 'ये सुरक्षित अभ्यास हैं; कोई असली account, file या tool इस्तेमाल नहीं होता।' : 'Safe simulations: no real accounts, files, or tools are touched.';
+  if (document.querySelector('#bonus-kicker')) document.querySelector('#bonus-kicker').textContent = next === 'hi' ? 'अतिरिक्त प्रैक्टिकल लैब' : 'BONUS PRACTICAL LABS';
+  if (document.querySelector('#bonus-title')) document.querySelector('#bonus-title').textContent = next === 'hi' ? 'दो असली फैसलों का अभ्यास करें।' : 'Practice two real-world decisions.';
+  if (document.querySelector('#bonus-intro')) document.querySelector('#bonus-intro').textContent = next === 'hi' ? 'ये सुरक्षित अभ्यास हैं; कोई असली account, file या tool इस्तेमाल नहीं होता।' : 'Safe simulations: no real accounts, files, or tools are touched.';
   document.querySelectorAll('[data-bonus]').forEach((button, index) => {button.textContent = next === 'hi' ? ['Support ticket tool का जाल','Shared drive अनुमति का जाल'][index] : ['Support ticket tool trap','Shared drive permission trap'][index];});
   document.querySelectorAll('[data-level]').forEach((button) => {button.textContent = next === 'hi' ? {easy:'आसान',medium:'मध्यम',hard:'कठिन'}[button.dataset.level] : button.dataset.level;});
   [...document.querySelector('#mode').options].forEach((option, i) => {option.textContent = (next === 'hi' ? ['सरल व्याख्या','उदाहरण','जोखिम कैसे घटाएँ'] : ['A simple explanation','A real-world example','How to reduce the risk'])[i];});
