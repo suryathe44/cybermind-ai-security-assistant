@@ -6,7 +6,7 @@ import hmac
 from time import perf_counter
 from uuid import uuid4
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, make_response, render_template, request
 
 from assessment import QUESTIONS, grade, public_assessment
 from certificates import assessment_proof, issue, score_from_proof, verify
@@ -31,7 +31,9 @@ def create_app(provider=None, limiter=None, certificate_secret=None, instructor_
 
     @app.get("/")
     def index():
-        return render_template("index.html")
+        response = make_response(render_template("index.html"))
+        response.headers["Cache-Control"] = "no-store"
+        return response
 
     @app.get("/health")
     def health():
