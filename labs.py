@@ -1,8 +1,8 @@
 """Fictional, deterministic security exercises with server-side answer keys."""
 
-from scenarios import EXTRA_SCENARIOS
+from scenarios import BONUS_SCENARIOS, EXTRA_SCENARIOS
 
-LEVELS = ("easy", "medium", "hard")
+LEVELS = ("easy", "medium", "hard", "bonus")
 REVIEWED_ON = "2026-09-21"
 REFERENCES = {
     "prompt injection": {"title": "OWASP LLM01: Prompt Injection", "url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"},
@@ -81,7 +81,12 @@ def get_lab(topic, level="easy"):
     base = LABS.get(topic)
     if base is None or level not in LEVELS:
         return None
-    return base if level == "easy" else {**base, **EXTRA_SCENARIOS[topic][level]}
+    if level == "easy":
+        return base
+    if level == "bonus":
+        bonus = BONUS_SCENARIOS.get(topic)
+        return {**base, **bonus} if bonus else None
+    return {**base, **EXTRA_SCENARIOS[topic][level]}
 
 
 def public_lab(topic, level="easy"):
