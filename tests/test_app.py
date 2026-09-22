@@ -110,6 +110,53 @@ class ChatTests(unittest.TestCase):
         self.assertFalse(failed.json["passed"])
         self.assertEqual(self.client.post("/api/assessment/submit", json={"answers": {"q1": "omit"}}).status_code, 400)
 
+    def test_hindi_chat_labs_and_assessment(self):
+        response = self.client.post("/api/chat", json={"topic": "mcp", "mode": "summary", "lang": "hi"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("टूल", response.json["answer"])
+        for topic in ("prompt injection", "rag poisoning", "mcp"):
+            for level in ("easy", "medium", "hard"):
+                with self.subTest(topic=topic, level=level):
+                    lab = self.client.get(f"/api/lab/{topic}?level={level}&lang=hi")
+                    self.assertEqual(lab.status_code, 200)
+                    self.assertNotIn("correct", lab.json)
+                    self.assertTrue(any(ord(char) > 0x900 for char in lab.json["scenario"]))
+        assessment = self.client.get("/api/assessment?lang=hi")
+        self.assertEqual(assessment.status_code, 200)
+        self.assertTrue(any(ord(char) > 0x900 for char in assessment.json["questions"][0]["task"]))
+        self.assertEqual(self.client.get("/api/assessment?lang=fr").status_code, 400)
+
+    def test_signed_certificate_and_instructor_privacy(self):
+        from assessment import QUESTIONS
+        from labs import get_lab
+        client = create_app(certificate_secret="s" * 40, instructor_token="i" * 32).test_client()
+        answers = {f"q{index}": get_lab(topic, level)["correct"] for index, (topic, level) in enumerate(QUESTIONS, 1)}
+        passed = client.post("/api/assessment/submit", json={"answers": answers}).json
+        self.assertEqual(passed["score"], 6)
+        issued = client.post("/api/certificate", json={"proof": passed["certificate_proof"], "name": "Workshop Learner"})
+        self.assertEqual(issued.status_code, 200)
+        certificate_id = issued.json["certificate_id"]
+        self.assertEqual(client.get(f"/verify/{certificate_id}").status_code, 200)
+        self.assertEqual(client.get(f"/verify/{certificate_id}changed").status_code, 404)
+        self.assertEqual(client.post("/api/certificate", json={"proof": "fake", "name": "Someone"}).status_code, 400)
+        self.assertEqual(client.get("/api/instructor/summary").status_code, 403)
+        summary = client.get("/api/instructor/summary", headers={"X-Instructor-Token": "i" * 32})
+        self.assertEqual(summary.status_code, 200)
+        self.assertEqual(summary.json["assessment_scores"]["6"], 1)
+        self.assertNotIn("Workshop Learner", str(summary.json))
+
+    def test_two_bonus_practical_labs(self):
+        for topic, correct in (("prompt injection", "summarize"), ("mcp", "check_folder")):
+            with self.subTest(topic=topic):
+                lab = self.client.get(f"/api/lab/{topic}?level=bonus&lang=hi")
+                self.assertEqual(lab.status_code, 200)
+                self.assertNotIn("correct", lab.json)
+                result = self.client.post(f"/api/lab/{topic}/submit", json={"level": "bonus", "action_id": correct, "lang": "hi"})
+                self.assertEqual(result.status_code, 200)
+                self.assertTrue(result.json["passed"])
+                self.assertIn("secure_fix", result.json)
+        self.assertEqual(self.client.get("/api/lab/rag poisoning?level=bonus").status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()
