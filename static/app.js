@@ -68,8 +68,14 @@ document.querySelector('#path-continue').addEventListener('click', () => {
   const last = path.last && !path.completed.includes(`${path.last.topic}|${path.last.level}`) ? path.last : next;
   openPathLab(last.topic, last.level);
 });
+document.querySelector('#quick-start').addEventListener('click', () => {
+  const unfinished = topics.flatMap((topic) => levels.map((level) => ({topic, level}))).filter(({topic, level}) => !path.completed.includes(`${topic}|${level}`));
+  const choices = unfinished.length ? unfinished : topics.flatMap((topic) => levels.map((level) => ({topic, level})));
+  const selected = choices[Math.floor(Math.random() * choices.length)];
+  openPathLab(selected.topic, selected.level);
+});
 const englishUI = new Map();
-const hindiUI = {'#page-title':'AI सुरक्षा, सरल भाषा में.', '.hero-description':'स्वीकृत जानकारी से AI सुरक्षा विषय, उदाहरण और बचाव सीखें।', '.workspace-heading h2':'आप क्या सीखना चाहेंगे?', '.topic-fieldset legend':'विषय चुनें', '.mode-control label':'मैं देखना चाहता हूँ', '#ask-button':'जवाब देखें ↗', '#start-lab':'लैब शुरू करें ↗', '#lab-form legend':'जवाब चुनें', '#lab-submit':'जवाब जाँचें ↗', '#lab-hint-button':'संकेत देखें', '#assessment-title':'अपना अभ्यास जाँचें।', '#assessment-intro':'छह सवाल। 5 सही जवाब पर प्रमाणपत्र मिलेगा। आप फिर कोशिश कर सकते हैं।', '#assessment-start':'आकलन शुरू करें ↗', '#assessment-submit':'स्कोर जाँचें ↗', '#certificate-name-label':'प्रमाणपत्र पर नाम', '#certificate-download':'सत्यापित प्रमाणपत्र डाउनलोड करें', '#instructor-title':'बिना नाम के कक्षा आँकड़े', '#instructor-token-label':'Instructor access code', '#instructor-submit':'आँकड़े देखें'};
+const hindiUI = {'#page-title':'AI सुरक्षा, सरल भाषा में.', '.hero-description':'स्वीकृत जानकारी से AI सुरक्षा विषय, उदाहरण और बचाव सीखें।', '.workspace-heading h2':'आप क्या सीखना चाहेंगे?', '.topic-fieldset legend':'विषय चुनें', '.mode-control label':'मैं देखना चाहता हूँ', '#ask-button':'जवाब देखें ↗', '#start-lab':'लैब शुरू करें ↗', '#lab-form legend':'जवाब चुनें', '#lab-submit':'जवाब जाँचें ↗', '#lab-hint-button':'संकेत देखें', '#assessment-title':'अपना अभ्यास जाँचें।', '#assessment-intro':'छह सवाल। 5 सही जवाब पर प्रमाणपत्र मिलेगा। आप फिर कोशिश कर सकते हैं।', '#assessment-start':'आकलन शुरू करें ↗', '#assessment-submit':'स्कोर जाँचें ↗', '#certificate-name-label':'प्रमाणपत्र पर नाम', '#certificate-download':'सत्यापित प्रमाणपत्र डाउनलोड करें', '#quick-title':'अचानक एक अभ्यास करें।', '#quick-description':'एक क्लिक से अगला अधूरा अभ्यास खुलेगा। आपकी प्रगति इसी browser में रहती है।', '#quick-start':'मुझे चुनौती दो ↗'};
 Object.keys(hindiUI).forEach((selector) => englishUI.set(selector, document.querySelector(selector).textContent));
 function setLanguage(next) {
   lang = next; document.documentElement.lang = next;
@@ -80,6 +86,7 @@ function setLanguage(next) {
   document.querySelector('[data-i18n="pathTitle"]').textContent = next === 'hi' ? 'नौ परिदृश्य, एक साफ़ रास्ता।' : 'Nine scenarios, one clear path.';
   document.querySelector('[data-i18n="pathSummary"]').textContent = next === 'hi' ? 'आपकी प्रगति इसी browser में रहती है। हर विषय के आसान, मध्यम और कठिन अभ्यास पूरे करें।' : 'Your progress stays in this browser. Complete easy, medium, and hard labs for each topic.';
   document.querySelector('#path-continue').textContent = next === 'hi' ? 'जहाँ छोड़ा था वहाँ से जारी रखें' : 'Continue where you left off';
+  document.querySelector('#quick-kicker').textContent = next === 'hi' ? 'त्वरित अभ्यास' : 'QUICK PRACTICE';
   if (document.querySelector('#bonus-kicker')) document.querySelector('#bonus-kicker').textContent = next === 'hi' ? 'अतिरिक्त प्रैक्टिकल लैब' : 'BONUS PRACTICAL LABS';
   if (document.querySelector('#bonus-title')) document.querySelector('#bonus-title').textContent = next === 'hi' ? 'दो असली फैसलों का अभ्यास करें।' : 'Practice two real-world decisions.';
   if (document.querySelector('#bonus-intro')) document.querySelector('#bonus-intro').textContent = next === 'hi' ? 'ये सुरक्षित अभ्यास हैं; कोई असली account, file या tool इस्तेमाल नहीं होता।' : 'Safe simulations: no real accounts, files, or tools are touched.';
@@ -88,7 +95,18 @@ function setLanguage(next) {
   [...document.querySelector('#mode').options].forEach((option, i) => {option.textContent = (next === 'hi' ? ['सरल व्याख्या','उदाहरण','जोखिम कैसे घटाएँ'] : ['A simple explanation','A real-world example','How to reduce the risk'])[i];});
   updateProgress();
 }
-document.querySelectorAll('[data-lang]').forEach((button) => button.addEventListener('click', () => {setLanguage(button.dataset.lang); if (labTopic && !labPanel.hidden) loadLab();}));
+document.querySelectorAll('[data-lang]').forEach((button) => button.addEventListener('click', () => {
+  setLanguage(button.dataset.lang);
+  if (labTopic && !labPanel.hidden) loadLab();
+  const activeAssessment = document.querySelector('#assessment-form');
+  if (!activeAssessment.hidden) {
+    activeAssessment.hidden = true;
+    document.querySelector('#assessment-result').hidden = true;
+    const start = document.querySelector('#assessment-start');
+    start.hidden = false; start.disabled = false;
+    start.textContent = lang === 'hi' ? 'आकलन शुरू करें ↗' : 'Start assessment ↗';
+  }
+}));
 setLanguage(lang);
 
 form.addEventListener('submit', async (event) => {
@@ -241,11 +259,13 @@ let certificateProof = null;
 
 assessmentStart.addEventListener('click', async () => {
   assessmentStart.disabled = true;
-  assessmentStart.textContent = 'Loading assessment…';
+  assessmentStart.textContent = lang === 'hi' ? 'आकलन लोड हो रहा है…' : 'Loading assessment…';
+  document.querySelector('#assessment-notice').textContent = '';
   try {
     const response = await fetch(`/api/assessment?lang=${lang}`);
     if (!response.ok) throw new Error('Assessment unavailable');
     const data = await response.json();
+    if (!Array.isArray(data.questions) || data.questions.length !== 6) throw new Error('Assessment unavailable');
     assessmentItems = data.questions;
     assessmentQuestions.replaceChildren(...assessmentItems.map((question, index) => {
       const fieldset = document.createElement('fieldset');
@@ -274,25 +294,39 @@ assessmentStart.addEventListener('click', async () => {
     assessmentForm.hidden = false;
     assessmentResult.hidden = true;
     assessmentStart.hidden = true;
+    updateAssessmentProgress();
     assessmentForm.querySelector('input').focus();
   } catch {
-    assessmentStart.textContent = 'Could not load. Try again';
+    assessmentStart.textContent = lang === 'hi' ? 'दोबारा कोशिश करें' : 'Try assessment again';
     assessmentStart.disabled = false;
+    document.querySelector('#assessment-notice').textContent = lang === 'hi' ? 'आकलन अभी लोड नहीं हुआ। थोड़ी देर बाद फिर कोशिश करें।' : 'Assessment could not load. Please try again shortly.';
   }
 });
+
+function updateAssessmentProgress() {
+  const count = assessmentItems.filter((question) => assessmentForm.querySelector(`input[name="${question.id}"]:checked`)).length;
+  document.querySelector('#assessment-progress').textContent = lang === 'hi' ? `${count} / 6 जवाब दिए` : `${count} of 6 answered`;
+}
+assessmentForm.addEventListener('change', updateAssessmentProgress);
 
 assessmentForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const answers = Object.fromEntries(assessmentItems.map((question) => [question.id, assessmentForm.querySelector(`input[name="${question.id}"]:checked`)?.value]));
-  if (Object.values(answers).some((value) => !value)) return;
+  if (Object.values(answers).some((value) => !value)) {
+    document.querySelector('#assessment-notice').textContent = lang === 'hi' ? 'स्कोर देखने से पहले सभी छह सवाल हल करें।' : 'Answer all six questions before checking your score.';
+    return;
+  }
   const submit = document.querySelector('#assessment-submit');
   submit.disabled = true;
+  document.querySelector('#assessment-notice').textContent = lang === 'hi' ? 'स्कोर जाँचा जा रहा है…' : 'Checking your score…';
   try {
     const response = await fetch('/api/assessment/submit', {
       method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({answers, lang}),
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Could not score assessment');
+    const result = await response.json().catch(() => ({}));
+    if (response.status === 429) throw new Error(lang === 'hi' ? 'बहुत जल्दी कई प्रयास हुए। 60 सेकंड रुककर फिर कोशिश करें।' : 'Too many attempts. Wait up to 60 seconds, then try again.');
+    if (!response.ok) throw new Error(result.error || (lang === 'hi' ? 'स्कोर नहीं मिला। फिर कोशिश करें।' : 'Could not score assessment. Try again.'));
+    document.querySelector('#assessment-notice').textContent = '';
     certificateProof = result.certificate_proof || null;
     path.bestScore = Math.max(path.bestScore || 0, result.score); savePath();
     document.querySelector('#assessment-score').textContent = `${result.score}/${result.total} · ${result.passed ? translations[lang].passed : translations[lang].practice}`;
@@ -306,8 +340,8 @@ assessmentForm.addEventListener('submit', async (event) => {
     assessmentResult.focus();
     assessmentResult.scrollIntoView({behavior: motion, block: 'start'});
   } catch (error) {
-    document.querySelector('#assessment-score').textContent = error.message;
-    assessmentResult.hidden = false;
+    document.querySelector('#assessment-notice').textContent = error instanceof TypeError ? (lang === 'hi' ? 'कनेक्शन टूट गया। फिर कोशिश करें।' : 'Connection lost. Please try again.') : error.message;
+    assessmentResult.hidden = true;
   } finally { submit.disabled = false; }
 });
 
@@ -340,22 +374,3 @@ document.querySelector('#certificate-download').addEventListener('click', async 
   finally { button.disabled = false; }
 });
 
-document.querySelector('#instructor-form').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const input = document.querySelector('#instructor-token'); const token = input.value; input.value = '';
-  const result = document.querySelector('#instructor-result'); result.hidden = false; result.textContent = 'Loading…';
-  try {
-    const response = await fetch('/api/instructor/summary', {headers: {'X-Instructor-Token': token}});
-    if (!response.ok) throw new Error('Could not load insights. Check your access code.');
-    const data = await response.json(); result.replaceChildren();
-    const heading = document.createElement('h3'); heading.textContent = lang === 'hi' ? 'कक्षा का सारांश' : 'Class summary'; result.append(heading);
-    for (const [label, values] of [['Score distribution', data.assessment_scores], ['Commonly missed questions', data.question_misses], ['Lab misses', data.lab_misses]]) {
-      const title = document.createElement('h4'); title.textContent = label; result.append(title);
-      const list = document.createElement('ul');
-      Object.entries(values).sort((a,b) => Number(b[1])-Number(a[1])).forEach(([key, value]) => {const item = document.createElement('li'); item.textContent = `${key}: ${value}`; list.append(item);});
-      if (!list.children.length) {const item=document.createElement('li'); item.textContent='No attempts yet'; list.append(item);}
-      result.append(list);
-    }
-  } catch (error) { result.textContent = error.message; }
-  result.focus();
-});
