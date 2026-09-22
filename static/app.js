@@ -62,6 +62,7 @@ function openPathLab(topic, level) {
   document.querySelectorAll('[data-level]').forEach((item) => item.setAttribute('aria-pressed', String(item.dataset.level === level)));
   loadLab();
 }
+document.querySelectorAll('[data-bonus]').forEach((button) => button.addEventListener('click', () => openPathLab(button.dataset.bonus, 'bonus')));
 document.querySelector('#path-continue').addEventListener('click', () => {
   const next = topics.flatMap((topic) => levels.map((level) => ({topic, level}))).find(({topic, level}) => !path.completed.includes(`${topic}|${level}`)) || {topic: topics[0], level: 'easy'};
   const last = path.last && !path.completed.includes(`${path.last.topic}|${path.last.level}`) ? path.last : next;
@@ -79,6 +80,10 @@ function setLanguage(next) {
   document.querySelector('[data-i18n="pathTitle"]').textContent = next === 'hi' ? 'नौ परिदृश्य, एक साफ़ रास्ता।' : 'Nine scenarios, one clear path.';
   document.querySelector('[data-i18n="pathSummary"]').textContent = next === 'hi' ? 'आपकी प्रगति इसी browser में रहती है। हर विषय के आसान, मध्यम और कठिन अभ्यास पूरे करें।' : 'Your progress stays in this browser. Complete easy, medium, and hard labs for each topic.';
   document.querySelector('#path-continue').textContent = next === 'hi' ? 'जहाँ छोड़ा था वहाँ से जारी रखें' : 'Continue where you left off';
+  document.querySelector('#bonus-kicker').textContent = next === 'hi' ? 'अतिरिक्त प्रैक्टिकल लैब' : 'BONUS PRACTICAL LABS';
+  document.querySelector('#bonus-title').textContent = next === 'hi' ? 'दो असली फैसलों का अभ्यास करें।' : 'Practice two real-world decisions.';
+  document.querySelector('#bonus-intro').textContent = next === 'hi' ? 'ये सुरक्षित अभ्यास हैं; कोई असली account, file या tool इस्तेमाल नहीं होता।' : 'Safe simulations: no real accounts, files, or tools are touched.';
+  document.querySelectorAll('[data-bonus]').forEach((button, index) => {button.textContent = next === 'hi' ? ['Support ticket tool का जाल','Shared drive अनुमति का जाल'][index] : ['Support ticket tool trap','Shared drive permission trap'][index];});
   document.querySelectorAll('[data-level]').forEach((button) => {button.textContent = next === 'hi' ? {easy:'आसान',medium:'मध्यम',hard:'कठिन'}[button.dataset.level] : button.dataset.level;});
   [...document.querySelector('#mode').options].forEach((option, i) => {option.textContent = (next === 'hi' ? ['सरल व्याख्या','उदाहरण','जोखिम कैसे घटाएँ'] : ['A simple explanation','A real-world example','How to reduce the risk'])[i];});
   updateProgress();
@@ -134,7 +139,7 @@ form.addEventListener('submit', async (event) => {
 
 async function loadLab() {
   labPanel.hidden = false;
-  path.last = {topic: labTopic, level: labLevel}; savePath();
+  if (labLevel !== 'bonus') {path.last = {topic: labTopic, level: labLevel}; savePath();}
   updateProgress();
   labResult.hidden = true;
   labActions.replaceChildren();
@@ -207,7 +212,7 @@ labForm.addEventListener('submit', async (event) => {
     const pathItem = `${labTopic}|${labLevel}`;
     if (response.ok && !result.passed) path.misses[pathItem] = (path.misses[pathItem] || 0) + 1;
     if (result.passed) {
-      if (!path.completed.includes(pathItem)) path.completed.push(pathItem);
+      if (labLevel !== 'bonus' && !path.completed.includes(pathItem)) path.completed.push(pathItem);
       updateProgress();
       for (const [id, key] of Object.entries({
         'lab-evidence-text': 'evidence', 'lab-root-cause': 'root_cause',
