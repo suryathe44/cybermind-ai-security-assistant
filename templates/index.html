@@ -9,13 +9,14 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="page-shell">
     <header class="site-header">
       <a class="brand" href="/" aria-label="CyberMind home"><span class="brand-mark" aria-hidden="true">C<span>✦</span></span><span>CYBERMIND<span class="brand-muted">SPACE</span></span></a>
-      <span class="header-badge"><span class="status-dot"></span> DAY 8 · AI SECURITY LAB</span>
+      <div class="header-actions"><div class="language-switch" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button></div><span class="header-badge"><span class="status-dot"></span> DAY 8 · AI SECURITY LAB</span></div>
     </header>
 
-    <main>
+    <main id="main-content">
       <section class="hero" aria-labelledby="page-title">
         <div class="hero-copy">
           <p class="eyebrow"><span class="eyebrow-line"></span> CYBERMINDSPACE AI SECURITY ASSISTANT</p>
@@ -26,6 +27,7 @@
         <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><div class="core"><span>✦</span></div><div class="orbit-label label-one">TRUSTED DATA</div><div class="orbit-label label-two">SECURE BY DESIGN</div></div>
       </section>
 
+      <section class="path-panel" aria-labelledby="path-title"><div class="lab-heading"><div><p class="section-kicker" data-i18n="pathKicker">YOUR LEARNING PATH</p><h2 id="path-title" data-i18n="pathTitle">Nine scenarios, one clear path.</h2></div><span id="path-count" class="path-count">0 / 9</span></div><p id="path-summary" data-i18n="pathSummary">Your progress stays in this browser. Complete easy, medium, and hard labs for each topic.</p><div id="path-grid" class="path-grid"></div><p id="weak-topics" class="weak-topics" role="status"></p><button type="button" id="path-continue" data-i18n="continue">Continue where you left off</button></section>
       <section class="workspace" aria-label="Ask the assistant">
         <div class="workspace-heading"><div><p class="section-kicker">THE ASSISTANT</p><h2>What would you like to learn?</h2></div><span class="step-label">01 / EXPLORE</span></div>
         <form id="chat-form">
@@ -41,7 +43,7 @@
       <section class="answer-panel" id="answer-panel" aria-live="polite" aria-atomic="true"><div class="answer-header"><span class="answer-tag"><span class="status-dot"></span> ANSWER</span><span id="source" class="answer-source">APPROVED LOCAL KNOWLEDGE</span></div><h2 id="result-title">Ready when you are.</h2><p id="answer">Select a topic and choose what you want to learn. A detailed answer will appear here.</p><div id="answer-details" class="answer-details" hidden><h3 id="details-heading"></h3><ul id="details-points"></ul><p id="details-takeaway" class="details-takeaway"></p></div><button type="button" id="start-lab" class="lab-launch" hidden>Start practical lab <span aria-hidden="true">↗</span></button></section>
       <section class="lab-panel" id="lab-panel" aria-labelledby="lab-title" hidden>
         <div class="lab-heading"><div><p class="section-kicker">HANDS-ON SECURITY LAB</p><h2 id="lab-title"></h2></div><span class="step-label">02 / PRACTICE</span></div>
-        <div class="lab-progress"><span id="lab-progress-text">0 of 3 labs completed</span><div class="lab-progress-track" aria-hidden="true"><span id="lab-progress-fill"></span></div></div>
+        <div class="lab-progress"><span id="lab-progress-text">0 of 9 scenarios completed</span><div class="lab-progress-track" aria-hidden="true"><span id="lab-progress-fill"></span></div></div>
         <div class="lab-levels" role="group" aria-label="Difficulty"><button type="button" data-level="easy" aria-pressed="true">Easy</button><button type="button" data-level="medium" aria-pressed="false">Medium</button><button type="button" data-level="hard" aria-pressed="false">Hard</button></div>
         <p id="lab-scenario" class="lab-scenario"></p>
         <p id="lab-task" class="lab-task"></p>
@@ -50,7 +52,8 @@
         <div id="lab-result" class="lab-result" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden><strong id="lab-status"></strong><p id="lab-feedback"></p><div id="lab-evidence" hidden><h3>Evidence</h3><p id="lab-evidence-text"></p><h3>Root cause</h3><p id="lab-root-cause"></p><h3>Vulnerable vs secure</h3><div class="lab-comparison"><p><b>Vulnerable</b><br><span id="lab-vulnerable"></span></p><p><b>Secure</b><br><span id="lab-secure"></span></p></div><h3>Secure fix</h3><p id="lab-secure-fix"></p></div></div>
         <p class="lab-source">Further reading: <a id="lab-reference" href="#" target="_blank" rel="noopener noreferrer"></a> · Reviewed <time id="lab-reviewed"></time></p>
       </section>
-      <section class="assessment-panel" aria-labelledby="assessment-title"><div class="lab-heading"><div><p class="section-kicker">FINAL ASSESSMENT</p><h2 id="assessment-title">Put your skills to the test.</h2></div><span class="step-label">03 / VERIFY</span></div><p>Six mixed security questions. Score at least 5 to earn a downloadable completion certificate. You can retry anytime.</p><button type="button" id="assessment-start" class="lab-launch">Start assessment <span aria-hidden="true">↗</span></button><form id="assessment-form" hidden><div id="assessment-questions"></div><button type="submit" id="assessment-submit">Check my score <span aria-hidden="true">↗</span></button></form><div id="assessment-result" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden><h3 id="assessment-score"></h3><ol id="assessment-review"></ol><div id="certificate-controls" hidden><label for="certificate-name">Name on certificate</label><input id="certificate-name" type="text" maxlength="70" autocomplete="name" placeholder="Your name"><button type="button" id="certificate-download">Download certificate (PNG)</button></div></div></section>
+      <section class="assessment-panel" aria-labelledby="assessment-title"><div class="lab-heading"><div><p class="section-kicker">FINAL ASSESSMENT</p><h2 id="assessment-title">Put your skills to the test.</h2></div><span class="step-label">03 / VERIFY</span></div><p id="assessment-intro">Six mixed security questions. Score at least 5 to earn a downloadable completion certificate. You can retry anytime.</p><button type="button" id="assessment-start" class="lab-launch">Start assessment <span aria-hidden="true">↗</span></button><form id="assessment-form" hidden><div id="assessment-questions"></div><button type="submit" id="assessment-submit">Check my score <span aria-hidden="true">↗</span></button></form><div id="assessment-result" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden><h3 id="assessment-score"></h3><ol id="assessment-review"></ol><div id="certificate-controls" hidden><label for="certificate-name" id="certificate-name-label">Name on certificate</label><input id="certificate-name" type="text" minlength="2" maxlength="70" autocomplete="name" placeholder="Your name"><button type="button" id="certificate-download">Download verified certificate (PNG)</button><p id="certificate-message" role="status"></p><a id="certificate-verify-link" href="#" target="_blank" rel="noopener" hidden>Open public verification page</a></div></div></section>
+      <section class="instructor-panel" aria-labelledby="instructor-title"><p class="section-kicker">INSTRUCTOR MODE</p><h2 id="instructor-title">Anonymous class insights</h2><p id="instructor-intro">Enter your instructor access code to view score distribution and commonly missed scenarios. This view counts attempts only, stores no learner names or answers, and resets when the service restarts.</p><form id="instructor-form"><label for="instructor-token" id="instructor-token-label">Instructor access code</label><div class="instructor-controls"><input id="instructor-token" type="password" required autocomplete="off"><button type="submit" id="instructor-submit">View insights</button></div></form><div id="instructor-result" role="status" tabindex="-1" hidden></div></section>
     </main>
     <footer><span>CYBERMINDSPACE © 2026</span><span>DAY 8 PRACTICAL · BUILT FOR LEARNING</span></footer>
   </div>
