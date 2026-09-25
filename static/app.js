@@ -75,7 +75,7 @@ document.querySelector('#quick-start').addEventListener('click', () => {
   openPathLab(selected.topic, selected.level);
 });
 const englishUI = new Map();
-const hindiUI = {'#page-title':'AI सुरक्षा, सरल भाषा में.', '.hero-description':'स्वीकृत जानकारी से AI सुरक्षा विषय, उदाहरण और बचाव सीखें।', '.workspace-heading h2':'आप क्या सीखना चाहेंगे?', '.topic-fieldset legend':'विषय चुनें', '.mode-control label':'मैं देखना चाहता हूँ', '#ask-button':'जवाब देखें ↗', '#start-lab':'लैब शुरू करें ↗', '#lab-form legend':'जवाब चुनें', '#lab-submit':'जवाब जाँचें ↗', '#lab-hint-button':'संकेत देखें', '#assessment-title':'अपना अभ्यास जाँचें।', '#assessment-intro':'छह सवाल। 5 सही जवाब पर प्रमाणपत्र मिलेगा। आप फिर कोशिश कर सकते हैं।', '#assessment-start':'आकलन शुरू करें ↗', '#assessment-submit':'स्कोर जाँचें ↗', '#certificate-name-label':'प्रमाणपत्र पर नाम', '#certificate-download':'सत्यापित प्रमाणपत्र डाउनलोड करें', '#quick-title':'अचानक एक अभ्यास करें।', '#quick-description':'एक क्लिक से अगला अधूरा अभ्यास खुलेगा। आपकी प्रगति इसी browser में रहती है।', '#quick-start':'मुझे चुनौती दो ↗'};
+const hindiUI = {'#page-title':'AI सुरक्षा, सरल भाषा में.', '.hero-description':'स्वीकृत जानकारी से AI सुरक्षा विषय, उदाहरण और बचाव सीखें।', '.workspace-heading h2':'आप क्या सीखना चाहेंगे?', '.topic-fieldset legend':'विषय चुनें', '.mode-control label':'मैं देखना चाहता हूँ', '#ask-button':'जवाब देखें ↗', '#start-lab':'लैब शुरू करें ↗', '#lab-form legend':'जवाब चुनें', '#lab-submit':'जवाब जाँचें ↗', '#lab-hint-button':'संकेत देखें', '#assessment-title':'अपना अभ्यास जाँचें।', '#assessment-intro':'छह scenario-based सवाल। हर attempt में सवाल और विकल्प नए क्रम में आएँगे। प्रमाणपत्र के लिए 5 सही जवाब चाहिए।', '#assessment-start':'आकलन शुरू करें ↗', '#assessment-submit':'स्कोर जाँचें ↗', '#certificate-name-label':'प्रमाणपत्र पर नाम', '#certificate-download':'सत्यापित प्रमाणपत्र डाउनलोड करें', '#quick-title':'अचानक एक अभ्यास करें।', '#quick-description':'एक क्लिक से अगला अधूरा अभ्यास खुलेगा। आपकी प्रगति इसी browser में रहती है।', '#quick-start':'मुझे चुनौती दो ↗'};
 Object.keys(hindiUI).forEach((selector) => englishUI.set(selector, document.querySelector(selector).textContent));
 function setLanguage(next) {
   lang = next; document.documentElement.lang = next;
@@ -373,4 +373,3 @@ document.querySelector('#certificate-download').addEventListener('click', async 
   } catch (error) { message.textContent = error.message; }
   finally { button.disabled = false; }
 });
-
