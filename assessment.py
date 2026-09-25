@@ -1,4 +1,6 @@
-"""Deterministic mixed-topic assessment; answer keys never leave the server."""
+"""Mixed-topic assessment with server-side keys and randomized presentation."""
+
+from secrets import SystemRandom
 
 from labs import REVIEWED_ON, get_lab
 
@@ -13,14 +15,18 @@ QUESTIONS = [
 
 
 def public_assessment():
+    randomizer = SystemRandom()
+    questions = []
+    for index, (topic, level) in enumerate(QUESTIONS, 1):
+        lab = get_lab(topic, level)
+        actions = [dict(action) for action in lab["actions"]]
+        randomizer.shuffle(actions)
+        questions.append({"id": f"q{index}", "topic": topic, "level": level,
+                          "scenario": lab["scenario"], "task": lab["task"],
+                          "actions": actions})
+    randomizer.shuffle(questions)
     return {
-        "questions": [
-            {"id": f"q{index}", "topic": topic, "level": level,
-             "scenario": get_lab(topic, level)["scenario"],
-             "task": get_lab(topic, level)["task"],
-             "actions": get_lab(topic, level)["actions"]}
-            for index, (topic, level) in enumerate(QUESTIONS, 1)
-        ],
+        "questions": questions,
         "passing_score": 5,
         "reviewed_on": REVIEWED_ON,
     }
